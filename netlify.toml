@@ -4,3 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "22"
+
+[[headers]]
+  for = "/media/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"

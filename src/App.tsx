@@ -1,73 +1,237 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ScrollTrigger, startSmoothScroll } from './lib/motion'
-import { ExplorerContext } from './state'
-import { Nav } from './components/Nav'
-import { InfoPanel } from './components/InfoPanel'
-import { Arrival } from './scenes/Arrival'
-import { Discover } from './scenes/Discover'
-import { Essentials } from './scenes/Essentials'
-import { SpaceFilms } from './components/SpaceFilms'
-import { Cursor } from './components/Cursor'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Journey, PX_PER_SEC, type JourneyState } from './components/Journey'
+import { Explore } from './components/Explore'
+import { RoomFilm } from './components/RoomFilm'
+import { useBackToClose } from './lib/backClose'
+import { onPlaybackBlocked, retryPlayback } from './lib/play'
+import { PROPERTY, WEDDING } from './data/resort'
+import { Laurel, Logo } from './components/Logo'
+import { ContactPage, GalleryPage, HallsPage, PageShell, RoomsPage, type Page } from './components/Pages'
+import { CONTACT, DURATION, ROUTE, SCENES } from './data/journey'
+
+const FILM_END = ROUTE.reduce((t, id) => t + DURATION[id], 0) * PX_PER_SEC
+const SECTIONS: [string, string][] = [['weddings', 'Weddings'], ['stay', 'Rooms'], ['tents', 'Nature tents'], ['pool', 'The pool'], ['adventure', 'Adventure park'], ['packages', 'Day packages'], ['photo-zones', 'Photo zones'], ['visit', 'Visit']]
+
+const PAGES: Page[] = ['rooms', 'halls', 'photos', 'contact']
+const PAGE_LABEL: Record<Page, string> = { rooms: 'Rooms', halls: 'Halls', photos: 'Photos', contact: 'Contact' }
+const readHash = (): Page | null => {
+  const h = location.hash.slice(1) === 'gallery' ? 'photos' : location.hash.slice(1)
+  return (PAGES as string[]).includes(h) ? (h as Page) : null
+}
 
 export default function App() {
-  const [activeZone, setActiveZone] = useState<string | null>(null)
-  const [films, setFilms] = useState<{ group: 'stay' | 'play' | 'events' | 'dining'; film?: string } | null>(null)
-  const opener = useRef<HTMLElement | null>(null)
+  const [loaded, setLoaded] = useState(false)
+  const [gone, setGone] = useState(false)
+  const route = ROUTE
+  const [state, setState] = useState<JourneyState>({ index: 0, id: 'arrival', local: 0, progress: 0, playing: false })
+  const [paused, setPaused] = useState(false)
+  const [menu, setMenu] = useState(false)
+  // a link straight to #rooms etc. opens that page on top of the home page, so Back returns home
+  const [page, setPage] = useState<Page | null>(() => {
+    const p = readHash()
+    // any address #fragment (a page or an old section link) is cleared so the visit starts at the film
+    if (window.location.hash) window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    return p
+  })
+  const jump = useRef<((i: number) => void) | null>(null)
+
+  const onState = useCallback((s: JourneyState) => setState(s), [])
+  const ready = useCallback(() => { setLoaded(true); window.setTimeout(() => setGone(true), 1600) }, [])
+
+  // an in-site link to #rooms, #halls… opens that page too
+  useEffect(() => {
+    const on = () => {
+      const p = readHash()
+      if (!p || (window.history.state && typeof window.history.state.d === 'number')) return
+      window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search)
+      setPage(p)
+    }
+    window.addEventListener('hashchange', on)
+    return () => window.removeEventListener('hashchange', on)
+  }, [])
+  const openPage = (p: Page | null, anchor?: string) => {
+    setMenu(false)
+    setPage(p)
+    if (p && anchor) window.setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 450)
+  }
+  const [room, setRoom] = useState<string | null>(null)
+  // some phones (Low Power Mode, battery or data savers) refuse to autoplay: offer a play button
+  const [blocked, setBlocked] = useState(false)
+  useEffect(() => onPlaybackBlocked(setBlocked), [])
+  // the device's back (swipe, back button, gesture) closes whatever is open, innermost first
+  useBackToClose(page !== null, () => setPage(null), page ? `#${page}` : undefined)
+  useBackToClose(room !== null, () => setRoom(null), room ? `#room-${room}` : undefined)
+  useBackToClose(menu, () => setMenu(false))
+  const [after, setAfter] = useState(false)
+  useEffect(() => {
+    const on = () => setAfter(window.scrollY > FILM_END + window.innerHeight * 0.2)
+    on()
+    window.addEventListener('scroll', on, { passive: true })
+    return () => window.removeEventListener('scroll', on)
+  }, [])
+  const toSection = (id: string) => { setMenu(false); window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'auto' }), 50) }
+
 
   useEffect(() => {
-    startSmoothScroll()
-    const onLoad = () => ScrollTrigger.refresh()
-    window.addEventListener('load', onLoad)
-    // Deep link: #discover, #stay, #packages … (artifact-safe plain hashes)
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
     window.scrollTo(0, 0)
-    const h = location.hash.slice(1)
-    if (h && h !== 'arrival') window.setTimeout(() => document.getElementById(h)?.scrollIntoView(), 2600)
-    return () => window.removeEventListener('load', onLoad)
   }, [])
+  useEffect(() => {
+    if (!menu) return
+    const k = (e: KeyboardEvent) => e.key === 'Escape' && setMenu(false)
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [menu])
 
-  const openZone = useCallback((id: string, el?: HTMLElement | null) => {
-    if (el) opener.current = el
-    else if (!opener.current) opener.current = document.activeElement as HTMLElement
-    setActiveZone(id)
-  }, [])
+  const scene = SCENES[state.id] ?? SCENES.arrival
+  const d = DURATION[state.id]
+  const isFirst = state.index === 0
+  const isLast = state.index === route.length - 1
+  const lineOn = isFirst || isLast || (state.local > 0.6 && state.local < d - 0.9)
 
-  const closeZone = useCallback(() => {
-    setActiveZone(null)
-    const el = opener.current
-    opener.current = null
-    // return focus to whatever opened the panel
-    window.setTimeout(() => el?.focus({ preventScroll: true }), 50)
-  }, [])
-
-  const openFilms = useCallback((group: 'stay' | 'play' | 'events' | 'dining', film?: string, el?: HTMLElement | null) => {
-    opener.current = el ?? (document.activeElement as HTMLElement)
-    setActiveZone(null)
-    setFilms({ group, film })
-  }, [])
-  const closeFilms = useCallback(() => {
-    setFilms(null)
-    const el = opener.current
-    opener.current = null
-    window.setTimeout(() => el?.focus({ preventScroll: true }), 50)
-  }, [])
-
-  const ctx = useMemo(() => ({ openZone, closeZone, activeZone, openFilms }), [openZone, closeZone, activeZone, openFilms])
+  const goTo = (id: string) => {
+    const i = route.indexOf(id)
+    if (i < 0) return
+    jump.current?.(i)
+  }
 
   return (
-    <ExplorerContext.Provider value={ctx}>
-      <a href="#discover" className="label fixed left-4 top-4 z-[70] -translate-y-24 bg-gold px-4 py-3 text-charcoal focus:translate-y-0">
-        Skip to resort overview
-      </a>
-      <Nav />
-      <main>
-        <Arrival />
-        <Discover />
-        <Essentials />
+    <>
+      <Journey route={route} ready={ready} paused={paused} disabled={page !== null || menu || room !== null} onState={onState} jumpRef={jump} onEnd={() => {
+        const el = document.getElementById('weddings')
+        if (el && !page && !menu && !room) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY, behavior: 'smooth' })
+      }} />
+      <Explore openPage={openPage} openRoom={setRoom} />
+
+      {/* ───────────── copy ───────────── */}
+      <main className="pointer-events-none fixed inset-0 z-10 flex items-center justify-center px-6 text-center">
+        <h1 className="sr-only">Vimal Resort & Entertainment Park, Gadag</h1>
+        {route.map((id, i) => {
+          const s = SCENES[id]
+          const on = i === state.index && lineOn && gone && !page && !after
+          return (
+            <section key={id} aria-hidden={!on} className={`absolute inset-x-6 flex flex-col items-center ${s.pos === 'top' ? 'top-[16svh]' : ''} transition-all duration-[1300ms] ease-[cubic-bezier(.22,1,.36,1)] ${on ? 'translate-y-0 opacity-100 blur-0' : 'translate-y-4 opacity-0 blur-[6px]'}`}>
+              {id === 'arrival' ? (
+                <>
+                  <p className="label title-sub mb-6 text-cream">{s.kicker}</p>
+                  <Logo className="logo-hero w-[min(74vw,62svh)]" />
+                  <p className="font-kn title-sub mt-4 text-xl tracking-[0.06em] text-cream md:text-2xl">{PROPERTY.kannadaName}</p>
+                  <span className="my-5 block h-px w-16 bg-gold/80" />
+                  <p className="font-display title-sub text-2xl italic text-cream md:text-4xl">{s.line}</p>
+                  <p className="title-sub mt-6 flex items-center gap-2.5 rounded-full border border-gold/50 bg-night/35 px-4 py-2 text-[0.7rem] uppercase tracking-[0.18em] text-cream backdrop-blur-sm md:text-xs">
+                    <Laurel className="h-5 w-5 shrink-0 text-gold" />
+                    <span>{WEDDING.award}<span className="hidden text-cream/65 sm:inline"> · {WEDDING.awardBy}</span></span>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="label mb-6 text-cream/75">{s.kicker}</p>
+                  <h2 className="font-display max-w-[16ch] text-[2.9rem] font-light leading-[1.02] text-cream [text-shadow:0_4px_50px_rgba(0,0,0,0.4)] md:text-[5.6vw]">{s.line}</h2>
+                  {s.cta && (
+                    <a href={s.cta.href} target={s.cta.href.startsWith('#') ? undefined : '_blank'} rel="noreferrer" tabIndex={on ? 0 : -1}
+                      className={`label mt-9 border-b ${on ? 'pointer-events-auto' : 'pointer-events-none'} border-gold/70 pb-1.5 text-gold transition-colors hover:border-cream hover:text-cream`}>
+                      {s.cta.label}
+                    </a>
+                  )}
+                </>
+              )}
+            </section>
+          )
+        })}
       </main>
-      <InfoPanel zoneId={activeZone} onClose={closeZone} onNavigate={(id) => setActiveZone(id)} onFilm={(g, f) => openFilms(g, f)} />
-      <SpaceFilms open={films} onClose={closeFilms} />
-      <div className="grain" aria-hidden />
-      <Cursor />
-    </ExplorerContext.Provider>
+
+      {/* ───────────── play button, only if the device blocked autoplay ───────────── */}
+      {blocked && gone && !page && !room && !menu && (
+        <button type="button" onClick={() => retryPlayback()} className="fixed bottom-[11svh] left-1/2 z-[35] flex -translate-x-1/2 items-center gap-2.5 rounded-full border border-gold bg-night/60 py-1.5 pl-1.5 pr-4 text-cream backdrop-blur-md md:bottom-[9svh]">
+          <span aria-hidden className="grid h-7 w-7 place-items-center rounded-full bg-gold text-[0.6rem] text-night">▶</span>
+          <span className="label whitespace-nowrap text-[0.62rem]">Tap to play the film</span>
+        </button>
+      )}
+
+      {/* ───────────── into the resort cue ───────────── */}
+      <button type="button" onClick={() => toSection('weddings')} tabIndex={isLast && !after ? 0 : -1}
+        className={`label fixed bottom-8 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-3 text-cream/85 transition-all duration-1000 hover:text-gold ${isLast && loaded && !page && !after ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-6 opacity-0'}`}>
+        Scroll to explore the resort
+        <span aria-hidden className="block h-10 w-px animate-pulse bg-gradient-to-b from-gold to-transparent" />
+      </button>
+
+      {/* ───────────── header ───────────── */}
+      <header className={`fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-6 transition-[opacity,background-color] duration-1000 md:px-10 md:py-8 ${after ? "bg-night/85 backdrop-blur-md md:py-6" : ""} ${loaded && !page ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+        <button type="button" onClick={() => goTo('arrival')} className="block w-[92px] text-cream md:w-[110px]" aria-label="Vimal Resort: back to the start"><Logo title={false} /></button>
+        <nav aria-label="Main" className="flex items-center gap-6 md:gap-9">
+          {PAGES.map((p) => (
+            <button key={p} type="button" onClick={() => openPage(p)} className="label hidden text-cream/85 hover:text-gold md:inline">{PAGE_LABEL[p]}</button>
+          ))}
+          <button type="button" onClick={() => setMenu(true)} className="label flex items-center gap-3 text-cream" aria-expanded={menu} aria-controls="chapters">
+            Explore
+            <span aria-hidden className="flex w-6 flex-col gap-[5px]"><span className="h-px bg-cream" /><span className="h-px w-4 bg-cream" /></span>
+          </button>
+        </nav>
+      </header>
+
+      {/* ───────────── footer: progress ───────────── */}
+      <footer className={`fixed inset-x-0 bottom-0 z-30 flex items-end justify-between gap-6 px-6 pb-6 transition-opacity duration-1000 md:px-10 md:pb-8 ${loaded && !isLast && !page && !after ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+        <div className="min-w-0">
+          <p className="label text-[0.62rem] text-cream/70"><span className="text-gold">{String(state.index + 1).padStart(2, '0')}</span> — {scene.chapter}</p>
+          <span className="mt-3 block h-px w-40 bg-cream/20 md:w-64"><span className="block h-full origin-left bg-gold" style={{ transform: `scaleX(${state.progress})` }} /></span>
+        </div>
+        <p className="label hidden text-[0.6rem] text-cream/55 md:block">{state.playing ? 'Scroll to move through the resort' : 'Paused, resumes in a moment'}</p>
+        <button type="button" onClick={() => setPaused((p) => !p)} className="label pointer-events-auto flex h-10 items-center gap-2 border border-cream/25 px-4 text-cream/80 hover:border-gold hover:text-gold" aria-label={paused ? 'Play the film' : 'Pause the film'}>
+          <span aria-hidden className="text-[0.6rem]">{paused ? '▶' : '❚❚'}</span>
+        </button>
+      </footer>
+
+      {/* ───────────── explore menu ───────────── */}
+      <div id="chapters" role="dialog" aria-modal="true" aria-label="Explore"
+        className={`fixed inset-0 z-[45] overflow-y-auto bg-night/92 backdrop-blur-lg transition-opacity duration-700 ${menu ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+        <button type="button" onClick={() => setMenu(false)} className="label absolute right-6 top-7 text-cream md:right-10 md:top-9" tabIndex={menu ? 0 : -1}>Close</button>
+        <div className="grid min-h-full gap-12 px-8 py-24 md:grid-cols-2 md:px-[10vw]">
+          <ol className="flex flex-col justify-center gap-0.5">
+            <li className="label mb-4 text-[0.6rem] text-gold">The film</li>
+            {route.map((id) => (
+              <li key={id}>
+                <button type="button" tabIndex={menu ? 0 : -1} onClick={() => { setMenu(false); goTo(id) }}
+                  className={`group text-left font-display text-3xl font-light transition-colors md:text-[2.6rem] ${id === state.id ? 'text-gold' : 'text-cream/85 hover:text-cream'}`}>
+                  <span className="inline-block transition-transform duration-500 group-hover:translate-x-2">{SCENES[id].chapter}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+          <div className="flex flex-col justify-center gap-2">
+            <p className="label mb-4 text-[0.6rem] text-gold">The resort</p>
+            {SECTIONS.map(([id, l]) => (
+              <button key={id} type="button" tabIndex={menu ? 0 : -1} onClick={() => toSection(id)} className="group text-left font-display text-2xl font-light text-cream/85 hover:text-gold md:text-3xl">
+                <span className="inline-block transition-transform duration-500 group-hover:translate-x-2">{l}</span>
+              </button>
+            ))}
+            <p className="label mb-4 mt-10 text-[0.6rem] text-gold">Plan</p>
+            {([['rooms', 'Rooms & Tents'], ['halls', 'Halls & Lawns'], ['photos', 'Photos'], ['contact', 'Contact']] as [Page, string][]).map(([p, l]) => (
+              <button key={p} type="button" tabIndex={menu ? 0 : -1} onClick={() => openPage(p)} className="group text-left font-display text-4xl font-light text-cream hover:text-gold md:text-6xl">
+                <span className="inline-block transition-transform duration-500 group-hover:translate-x-2">{l}</span>
+              </button>
+            ))}
+            <p className="mt-10 text-sm text-cream/55"><a href={CONTACT.tel} className="hover:text-gold" tabIndex={menu ? 0 : -1}>{CONTACT.phone}</a> · <a href={CONTACT.whatsapp} target="_blank" rel="noreferrer" className="hover:text-gold" tabIndex={menu ? 0 : -1}>WhatsApp</a></p>
+          </div>
+        </div>
+      </div>
+
+      {/* ───────────── pages ───────────── */}
+      <PageShell page={page} onClose={() => openPage(null)}>
+        {page === 'rooms' && <RoomsPage onWalk={setRoom} />}
+        {page === 'halls' && <HallsPage />}
+        {page === 'photos' && <GalleryPage />}
+        {page === 'contact' && <ContactPage />}
+      </PageShell>
+
+      <RoomFilm id={room} onClose={() => setRoom(null)} onChange={setRoom} />
+
+      {/* ───────────── preloader ───────────── */}
+      {!gone && (
+        <div role="status" aria-label="Loading" className={`fixed inset-0 z-[60] flex flex-col items-center justify-center bg-night transition-opacity duration-[1400ms] ${loaded ? 'opacity-0' : 'opacity-100'}`}>
+          <Logo className="w-[min(60vw,320px)] animate-[breathe_2.4s_ease-in-out_infinite] text-cream" />
+          <p className="label mt-6 text-cream/45">Gadag · Karnataka</p>
+        </div>
+      )}
+    </>
   )
 }

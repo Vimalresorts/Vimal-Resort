@@ -1,29 +1,20 @@
-import type { SourceKey } from './sources'
-import type { MediaId } from './media'
-
-export interface Fact {
-  label: string
-  value: string
-  source: SourceKey
-}
-
-/* ------------------------------------------------------------------ */
-/* Property-wide facts (NOT booking inventory)                          */
-/* ------------------------------------------------------------------ */
+/**
+ * Detailed resort facts, carried over from version 0 (sources: the resort's
+ * own site, vimalresort.netlify.app, and the MapX virtual tour).
+ * Photos are ids in src/data/gallery.json.
+ */
 export const PROPERTY = {
   name: 'Vimal Resort & Entertainment Park',
-  shortName: 'VIMAL',
-  kannadaName: 'ವಿಮಲ ರೆಸಾರ್ಟ್',
-  tagline: 'Where Every Journey Becomes a Memory',
-  region: 'Gadag · North Karnataka',
+  kannadaName: 'ವಿಮಲ ರೆಸಾರ್ಟ್', // as written on the resort's own gate sign
+  tagline: 'Where every journey becomes a memory',
   facts: [
-    { label: 'Property', value: '23 acres', source: 'netlify' },
-    { label: 'Luxury rooms', value: '105', source: 'netlify' },
-    { label: 'Nature tents', value: '15', source: 'netlify' },
-    { label: 'Adventure park', value: '2 acres · 20+ activities', source: 'netlify' },
-    { label: 'Trees', value: '1,500+', source: 'netlify' },
-    { label: 'Parking', value: '300 cars', source: 'netlify' },
-  ] satisfies Fact[],
+    { value: '23', unit: 'acres', label: 'of gardens & orchards' },
+    { value: '105', unit: 'rooms', label: 'rustic luxury, AC' },
+    { value: '15', unit: 'tents', label: 'glamping among the trees' },
+    { value: '20+', unit: 'activities', label: 'in a 2-acre adventure park' },
+    { value: '1,500+', unit: 'trees', label: 'on the property' },
+    { value: '300', unit: 'cars', label: 'parking' },
+  ],
   trees: [
     { label: 'Sapota', value: '375' },
     { label: 'Guava', value: '320' },
@@ -32,33 +23,17 @@ export const PROPERTY = {
   ],
 }
 
-/* ------------------------------------------------------------------ */
-/* Contact                                                              */
-/* ------------------------------------------------------------------ */
-export const CONTACT = {
-  phoneDisplay: '+91 98867 84189',
-  phoneHref: 'tel:+919886784189',
-  whatsapp: 'https://wa.me/919886784189',
-  email: 'vimalresort@gmail.com',
-  instagram: '@vimalresort',
-  // Netlify address used as primary; MapX gives a different PIN — see inventory.
-  address: 'New Bengaluru Highway, Shiratti Road, near Beladadi, Gadag, Karnataka 582101',
-  mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Vimal+Resort+Gadag',
-  nearby: [
-    { place: 'Basaveshwara Statue', km: '12 km' },
-    { place: 'Gadag town', km: '11 km' },
-    { place: 'Lakkundi Temples', km: '10 km' },
-    { place: 'Magadi Bird Sanctuary', km: '30 km' },
-    { place: 'Badami', km: '77 km' },
-    { place: 'Hampi', km: '120 km' },
-  ],
-}
+export const NEARBY = [
+  { place: 'Lakkundi Temples', km: '10 km' },
+  { place: 'Gadag town', km: '11 km' },
+  { place: 'Basaveshwara Statue', km: '12 km' },
+  { place: 'Magadi Bird Sanctuary', km: '30 km' },
+  { place: 'Badami', km: '77 km' },
+  { place: 'Hampi', km: '120 km' },
+]
 
-/* ------------------------------------------------------------------ */
-/* Day packages — published reference prices (MapX tour)               */
-/* ------------------------------------------------------------------ */
-export const PACKAGES = {
-  source: 'mapx' as SourceKey,
+/** Day packages: published reference prices (MapX tour). */
+export const DAY = {
   timings: '9:00 am – 5:00 pm',
   taxNote: 'GST as applicable',
   gold: {
@@ -73,126 +48,137 @@ export const PACKAGES = {
   adventure: {
     name: 'Adventure Package',
     price: '₹400',
-    unit: 'per person, add-on',
+    unit: 'per person, add-on to a day package',
     includes: ['Zipline', 'Sky cycling', 'Rappelling', 'Net climbing', 'Burma bridge', 'Multi-vines', "Bosun's chair", 'Tyre crossing', 'Tyre wall climbing', 'Ladder walk', 'Zig-zag bridge', 'Bungee trampoline', 'Human gyro', '360° cycling', 'Meltdown ride'],
   },
-  extras: [{ label: 'Nylon swimwear', value: 'Mandatory for the pool · rental ₹50 per person' }],
+  extras: [{ label: 'Nylon swimwear', value: 'mandatory for the pool · rental ₹50 per person' }],
+  groups: 'Schools, colleges, corporate outings and family functions welcome.',
 }
 
-/* ------------------------------------------------------------------ */
-/* Discover zones                                                       */
-/* `pin` is set ONLY where the zone is clearly identifiable in the      */
-/* aerial-front photograph. Others are listed, never guessed onto map.  */
-/* ------------------------------------------------------------------ */
 export interface Zone {
   id: string
   name: string
   kicker: string
   summary: string
-  facts: Fact[]
-  details?: { text: string; source: SourceKey }[]
-  media: MediaId[]
-  pin?: { x: number; y: number } // 0–1, relative to aerial-front image
-  price?: { text: string; source: SourceKey } | 'enquire'
+  facts: { label: string; value: string }[]
+  details?: string[]
+  photos: string[]
+  /** position on the aerial photograph (n00), 0–1; only where unmistakable */
+  pin?: { x: number; y: number }
+  page?: 'rooms' | 'halls' | 'photos' | 'contact'
+  pageLabel?: string
 }
 
 export const ZONES: Zone[] = [
   {
-    id: 'pool',
-    name: 'Swimming Pool',
-    kicker: 'The Water Oasis',
+    id: 'pool', name: 'Swimming Pool', kicker: 'The Water Oasis',
     summary: 'A 5,000 sq. ft. swimming pool with a dedicated rain dance arena alongside.',
-    facts: [
-      { label: 'Pool', value: '5,000 sq. ft.', source: 'netlify' },
-      { label: 'Rain dance', value: 'Dedicated arena', source: 'netlify' },
-      { label: 'Swimwear', value: 'Nylon, mandatory · rental ₹50', source: 'mapx' },
-    ],
-    details: [{ text: 'Pool and rain dance are included in the Gold day package.', source: 'mapx' }],
-    media: ['poolFun', 'poolKids', 'mxPool'],
-    pin: { x: 0.381, y: 0.383 },
+    facts: [{ label: 'Pool', value: '5,000 sq. ft.' }, { label: 'Rain dance', value: 'Dedicated arena with music' }, { label: 'Swimwear', value: 'Nylon, mandatory · rental ₹50' }],
+    details: ['Pool and rain dance are included in the Gold day package.'],
+    photos: ['a05', 'n06', 'n07'], pin: { x: 0.381, y: 0.383 },
   },
   {
-    id: 'adventure',
-    name: 'Adventure Park',
-    kicker: 'Thrill Meets Serenity',
+    id: 'adventure', name: 'Adventure Park', kicker: 'Thrill Meets Serenity',
     summary: 'A dedicated 2-acre park with more than 20 activities, built around a multi-level rope and climbing tower.',
-    facts: [
-      { label: 'Area', value: '2 acres', source: 'netlify' },
-      { label: 'Activities', value: '20+', source: 'netlify' },
-      { label: 'Adventure package', value: '₹400 per person (add-on)', source: 'mapx' },
-    ],
-    details: [
-      { text: 'Sky cycling, zip climbing, zipline, giant swing, bungee trampoline, mud race and suspension bridges.', source: 'netlify' },
-      { text: 'Age, height and weight limits are not published. Ask the resort before you book.', source: 'netlify' },
-    ],
-    media: ['adventureAerial', 'zipline', 'ropeBridge', 'zorb'],
-    pin: { x: 0.828, y: 0.41 },
-    price: { text: '₹400 per person, add-on to a day package', source: 'mapx' },
+    facts: [{ label: 'Area', value: '2 acres' }, { label: 'Activities', value: '20+' }, { label: 'Adventure package', value: '₹400 per person (add-on)' }],
+    details: ['Sky cycling, zip climbing, zipline, giant swing, bungee trampoline, mud race and suspension bridges.', 'Age, height and weight limits are not published. Ask the resort before you book.'],
+    photos: ['n01', 'n02', 'n03', 'n04'], pin: { x: 0.828, y: 0.41 },
   },
   {
-    id: 'rooms',
-    name: 'Luxury Rooms',
-    kicker: 'Sanctuary of Comfort',
+    id: 'rooms', name: 'Luxury Rooms', kicker: 'Sanctuary of Comfort',
     summary: 'Rustic architecture with AC, family suites and modern cottage amenities.',
-    facts: [
-      { label: 'Rooms', value: '105', source: 'netlify' },
-      { label: 'Amenities', value: 'AC · family suites', source: 'netlify' },
-    ],
-    details: [{ text: 'Room categories, occupancy and tariffs are not published.', source: 'mapx' }],
-    media: ['roomTwin', 'roomKing2', 'roomKing', 'roomSeating'],
-    price: 'enquire',
+    facts: [{ label: 'Rooms', value: '105' }, { label: 'Amenities', value: 'AC · family suites' }],
+    photos: ['p31', 'p06', 'p39', 'p07'], page: 'rooms', pageLabel: 'See the rooms',
   },
   {
-    id: 'tents',
-    name: 'Nature Tents',
-    kicker: 'Close to Nature',
+    id: 'tents', name: 'Nature Tents', kicker: 'Close to Nature',
     summary: 'Glamping tents for groups and families, set in the green part of the grounds.',
-    facts: [{ label: 'Tents', value: '15', source: 'netlify' }],
-    media: ['tentExterior', 'tentInterior'],
-    price: 'enquire',
+    facts: [{ label: 'Tents', value: '15' }],
+    photos: ['p43', 'p44', 'p46'], page: 'rooms', pageLabel: 'See the tents',
   },
   {
-    id: 'restaurant',
-    name: 'Restaurant',
-    kicker: 'Vimal Resort Kitchen',
+    id: 'restaurant', name: 'Restaurant', kicker: 'Vimal Resort Kitchen',
     summary: 'A 2,500 sq. ft. multi-cuisine restaurant serving North Indian, South Indian and Jain dishes.',
-    facts: [
-      { label: 'Area', value: '2,500 sq. ft.', source: 'netlify' },
-      { label: 'Cuisine', value: 'North Indian · South Indian · Jain', source: 'netlify' },
-      { label: 'Kitchen', value: 'Pure vegetarian · Jain on request', source: 'mapx' },
-    ],
-    media: ['mxDiningHall', 'mxRestaurant'],
+    facts: [{ label: 'Area', value: '2,500 sq. ft.' }, { label: 'Cuisine', value: 'North Indian · South Indian · Jain' }, { label: 'Kitchen', value: 'Pure vegetarian · Jain on request' }],
+    details: ['Food photos are illustrative; the day’s menu may vary.'],
+    photos: ['f00', 'f01', 'f02'], page: 'photos', pageLabel: 'See the food',
   },
   {
-    id: 'lawn',
-    name: 'Marriage Lawn',
-    kicker: 'Grand Celebrations',
+    id: 'lawn', name: 'Marriage Lawn', kicker: 'Grand Celebrations',
     summary: 'A 40,000 sq. ft. lawn with pre-built mandap spaces for large Indian weddings.',
-    facts: [
-      { label: 'Area', value: '40,000 sq. ft.', source: 'netlify' },
-      { label: 'Guests', value: '1,000+', source: 'netlify' },
-    ],
-    media: ['weddingLawn'],
+    facts: [{ label: 'Area', value: '40,000 sq. ft.' }, { label: 'Guests', value: '1,000+' }],
+    photos: ['n10', 'a04'], page: 'halls', pageLabel: 'See halls & lawns',
   },
   {
-    id: 'halls',
-    name: 'Marriage Hall & Banquets',
-    kicker: 'Indoor Ceremonies',
+    id: 'halls', name: 'Marriage Hall & Banquets', kicker: 'Indoor Ceremonies',
     summary: 'A 7,500 sq. ft. marriage hall for main ceremonies, plus 2,500 sq. ft. banquet halls for receptions and corporate events.',
-    facts: [
-      { label: 'Marriage hall', value: '7,500 sq. ft.', source: 'netlify' },
-      { label: 'Banquet halls', value: '2,500 sq. ft.', source: 'netlify' },
-    ],
-    details: [{ text: 'Seating capacities for the halls are not published.', source: 'netlify' }],
-    media: ['marriageHall', 'hallDecorated'],
+    facts: [{ label: 'Marriage hall', value: '7,500 sq. ft.' }, { label: 'Banquet halls', value: '2,500 sq. ft.' }],
+    details: ['Seating capacities for the halls are not published.'],
+    photos: ['n08', 'n09'], page: 'halls', pageLabel: 'See halls & lawns',
   },
   {
-    id: 'watchtower',
-    name: '360° Watchtower',
-    kicker: 'Eagle Views',
+    id: 'watchtower', name: '360° Watchtower', kicker: 'Eagle Views',
     summary: 'An observation tower with views across the resort and the surrounding farmland.',
-    facts: [{ label: 'View', value: '360°', source: 'netlify' }],
-    details: [{ text: 'Photo: a drone view from above the resort, not the view from the tower itself.', source: 'mapx' }],
-    media: ['panoAerial'],
+    facts: [{ label: 'View', value: '360°' }],
+    details: ['Photo: a drone view from above the resort, not the view from the tower itself.'],
+    photos: ['a01'],
   },
+]
+
+/**
+ * Destination weddings. Source for the award and the figures: the resort's own
+ * Instagram post (@vimalresort): "recognised as the Best Destination Wedding
+ * Venue in Karnataka at the Karnataka Tourism Awards".
+ * awardPhoto: set to a gallery id once the award photo is supplied.
+ */
+export const WEDDING = {
+  award: 'Best Destination Wedding Venue in Karnataka',
+  awardBy: 'Karnataka Tourism Awards',
+  awardPhoto: null as string | null,
+  facts: [
+    { value: '2', label: 'fully air-conditioned halls' },
+    { value: '4,000+', label: 'floating capacity' },
+    { value: '600+', label: 'guests can stay over' },
+    { value: '40,000', label: 'sq. ft. open-sky lawn' },
+  ],
+  photos: ['q08', 'q09', 'n09', 'n10'],
+}
+
+/** Short films from the resort's own phone footage (media/clips/<id>-lg.mp4). */
+export interface Clip { id: string; caption: string }
+export const CLIPS: Clip[] = [
+  { id: 'gate-dusk', caption: 'The Vimal Resort gateway at dusk' },
+  { id: 'gate-sign', caption: 'The gateway sign, lit up' },
+  { id: 'heart-lights', caption: 'The heart of lights by the gate' },
+  { id: 'entrance-wide', caption: 'Arriving at the entrance' },
+  { id: 'entrance-plaza', caption: 'The entrance plaza: topiary and cart wheels' },
+  { id: 'light-tunnel', caption: 'The light tunnel and rain curtain' },
+  { id: 'palm-path', caption: 'Under the palms' },
+  { id: 'garden-path', caption: 'Garden pathway' },
+  { id: 'sculpture-garden', caption: 'The sculpture garden' },
+  { id: 'pool-sunset', caption: 'The pool at sunset' },
+  { id: 'pool-dusk', caption: 'The pool at dusk' },
+  { id: 'zipline', caption: 'Sky cycling above the adventure park' },
+  { id: 'zipline-2', caption: 'Sky cycling' },
+  { id: 'zip-tower', caption: 'The adventure tower' },
+  { id: 'kids-play', caption: 'Kids’ play area' },
+  { id: 'banquet-walk', caption: 'Walking into the banquet hall' },
+  { id: 'hall-drone', caption: 'The marriage hall and lawn from the air' },
+  { id: 'banquet-hall', caption: 'Banquet hall, set for a celebration' },
+  { id: 'thank-you', caption: 'Thank you, visit again' },
+]
+
+/** Spots made for pictures. A zone shows a short film (clip) or a photo (gallery id). */
+export interface PhotoZone { id: string; name: string; note: string; clip?: string; photo?: string }
+export const PHOTO_ZONES: PhotoZone[] = [
+  { id: 'heart', name: 'The heart of lights', note: 'A heart of fairy lights beside the gate, glowing from dusk.', clip: 'heart-lights' },
+  { id: 'gateway', name: 'The Vimal Resort gateway', note: 'The lit sign at dusk is the classic arrival photo.', clip: 'gate-dusk' },
+  { id: 'tunnel', name: 'The light tunnel', note: 'A vine-covered arch of lights with a rain curtain at its heart.', clip: 'light-tunnel' },
+  { id: 'fountain', name: 'Fountain plaza', note: 'The white statue fountain on its patterned stone circle.', photo: 'p30' },
+  { id: 'sculpture', name: 'Sculpture garden', note: 'Flowering trees around a white sculpture, best at golden hour.', clip: 'sculpture-garden' },
+  { id: 'plaza', name: 'Entrance plaza', note: 'Topiary in the round, framed by the cart-wheel walls.', clip: 'entrance-plaza' },
+  { id: 'wheel', name: 'Cart-wheel wall', note: 'Stone, greenery and a painted wheel, softly lit in the evening.', photo: 'q00' },
+  { id: 'palms', name: 'Palm pathway', note: 'A long, lamp-lit walk beneath the coconut palms.', photo: 'q01' },
+  { id: 'greenery', name: 'The orchards', note: 'Shade, grass and 1,500+ trees: mango, sapota, guava and teak.', photo: 'p20' },
+  { id: 'garden-path', name: 'Garden pathway', note: 'A winding red-brick path through the trees.', clip: 'garden-path' },
 ]

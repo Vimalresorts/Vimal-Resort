@@ -1,14 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import '@fontsource-variable/bodoni-moda'
-import '@fontsource-variable/instrument-sans'
+import '@fontsource/cormorant-garamond/300.css'
+import '@fontsource/cormorant-garamond/400.css'
+import '@fontsource/cormorant-garamond/400-italic.css'
+import '@fontsource-variable/manrope'
+import '@fontsource/noto-serif-kannada/kannada-400.css'
+import '@fontsource/cinzel/latin-500.css'
 import './index.css'
 import App from './App'
 
-// Always open on the film: never restore a previous scroll position.
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
-window.scrollTo(0, 0)
-window.addEventListener('pageshow', () => window.scrollTo(0, 0))
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

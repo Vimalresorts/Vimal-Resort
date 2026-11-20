@@ -6,7 +6,7 @@ import { CONTACT, wa } from '../data/journey'
 import { CLIPS, DAY, NEARBY } from '../data/resort'
 import { SectionFilm } from './Explore'
 import { roomFilm } from './RoomFilm'
-import { filmSize } from '../lib/play'
+import { useFilmSize } from '../lib/play'
 import { useBackToClose } from '../lib/backClose'
 import { Logo } from './Logo'
 
@@ -59,9 +59,10 @@ const Heading = ({ kicker, title, sub }: { kicker: string; title: string; sub?: 
 
 /* ───────────────────────── rooms & halls ───────────────────────── */
 function FilmHero({ scene, kicker, title, sub }: { scene: string; kicker: string; title: string; sub: string }) {
+  const size = useFilmSize()
   return (
     <header className="relative -mt-[88px] flex h-[78svh] min-h-[520px] items-end overflow-hidden md:-mt-[104px]">
-      <video src={`${base}media/scenes/${scene}-${filmSize()}.mp4`} poster={`${base}media/scenes/${scene}-poster.webp`}
+      <video key={size} src={`${base}media/scenes/${scene}-${size}.mp4`} poster={`${base}media/scenes/${scene}-poster.webp`}
         autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-night via-night/30 to-night/40" />
       <div className="relative mx-auto w-full max-w-6xl px-6 pb-14 md:px-10 md:pb-20">
@@ -317,8 +318,10 @@ export function ContactPage() {
             <a href={CONTACT.instagram} target="_blank" rel="noreferrer" className="mt-2 block text-cream hover:text-gold">Instagram {CONTACT.instagramHandle}</a>
           </div>
           <div className="border-t border-cream/10 pt-6 text-sm text-cream/55">
-            <p className="label mb-3 text-[0.6rem] text-cream/45">Nearby</p>
-            {NEARBY.map((n) => `${n.place} ${n.km}`).join(' · ')}
+            <p className="label mb-3 text-[0.6rem] text-cream/45">Nearby · by road</p>
+            <ul className="grid grid-cols-1 gap-x-8 gap-y-1.5 sm:grid-cols-2">
+              {NEARBY.map((n) => <li key={n.place} className="flex justify-between gap-4 border-b border-cream/10 pb-1.5"><span>{n.place}</span><span className="tabular-nums">{n.km}</span></li>)}
+            </ul>
           </div>
         </div>
 

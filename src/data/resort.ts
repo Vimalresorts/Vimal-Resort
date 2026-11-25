@@ -139,9 +139,10 @@ export const ZONES: Zone[] = [
  * awardPhoto: set to a gallery id once the award photo is supplied.
  */
 export const WEDDING = {
-  award: 'Best Destination Wedding Venue in Karnataka',
-  awardBy: 'Karnataka Tourism Awards',
-  awardPhoto: null as string | null,
+  // wording as on the certificate (Awards folder, IMG_1781)
+  award: 'Best Wedding Venue',
+  awardBy: 'Karnataka Tourism Awards 2026',
+  awardPhoto: 'y10' as string | null,
   facts: [
     { value: '2', label: 'fully air-conditioned halls' },
     { value: '4,000+', label: 'floating capacity' },
@@ -176,7 +177,7 @@ export const CLIPS: Clip[] = [
   { id: 'zip-tower', caption: 'The adventure tower', topic: 'Adventure' },
   { id: 'kids-play', caption: 'Kids’ play area', topic: 'Adventure' },
   { id: 'wedding-film', caption: 'The resort dressed for a wedding', topic: 'Celebrations' },
-  { id: 'wed-courtyard-stage', caption: 'The open-roof hall, set for a wedding', topic: 'Celebrations' },
+  { id: 'wed-courtyard-stage', caption: 'The Courtyard Marriage Hall, set for a wedding', topic: 'Celebrations' },
   { id: 'wed-stage-reveal', caption: 'From the stage to the whole hall', topic: 'Celebrations' },
   { id: 'wed-hall-stage', caption: 'The banquet hall stage', topic: 'Celebrations' },
   { id: 'wed-mandala-entry', caption: 'The mandala wall at the hall entrance', topic: 'Celebrations' },
@@ -203,4 +204,15 @@ export const PHOTO_ZONES: PhotoZone[] = [
   { id: 'palms', name: 'Palm pathway', note: 'A long, lamp-lit walk beneath the coconut palms.', photo: 'q01' },
   { id: 'greenery', name: 'The orchards', note: 'Shade, grass and 1,500+ trees: mango, sapota, guava and teak.', photo: 'p20' },
   { id: 'garden-path', name: 'Garden pathway', note: 'A winding red-brick path through the trees.', clip: 'garden-path' },
+]
+
+/**
+ * Awards, as written on the certificates in the client's Awards folder (Drive, 25 Nov).
+ * photo: gallery id (category Awards). The JITO plaque (title sponsorship) is a thank-you, not an award, so it is left out.
+ */
+export const AWARDS = [
+  { year: '2026', title: 'Best Wedding Venue', by: 'Karnataka Tourism Awards, Department of Tourism, Government of Karnataka & Karnataka Tourism Society', photo: 'y10' },
+  { year: '2025', title: 'Best Premier Luxury Resort for Destination Weddings, Adventure & Corporate Events in North Karnataka', by: 'India Business Awards 2025', photo: 'y12' },
+  { year: '2024', title: 'Best MSME Award for Quality Excellence', by: 'India 5000 Best MSME Awards', photo: 'y14' },
+  { year: '2023', title: 'Shreshta Udyami Prashasti (Best Entrepreneur), to founder Shri Bhushan Prakash Shah', by: 'Gadag Utsav 2023, Gadag District Chamber of Commerce & Industry', photo: null },
 ]

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { CLIPS, DAY, NEARBY, PHOTO_ZONES, PROPERTY, WEDDING } from '../data/resort'
+import { AWARDS, CLIPS, DAY, NEARBY, PHOTO_ZONES, PROPERTY, WEDDING } from '../data/resort'
 import { HALLS, ROOMS } from '../data/rooms'
 import { CONTACT, wa } from '../data/journey'
 import { Lightbox, byId, clip, galleryStart, type GItem, type Page } from './Pages'
@@ -116,23 +116,18 @@ export function Explore({ openPage, openRoom }: { openPage: (p: Page, anchor?: s
 
       {/* ─────────── ROOMS ─────────── */}
       <FilmSection onFull={setFull} id="stay" film="stay" kicker={`${PROPERTY.facts[1].value} luxury rooms · 15 nature tents`} labelledBy="stay-title" title={<>Find your place <em className="text-cream/85">to unwind.</em></>}>
-        <div data-reveal className="mt-10 grid max-w-5xl gap-3 sm:grid-cols-3">
+        {/* every room type and both tents; a card with a walk-in film plays it, the others open their photos */}
+        <div data-reveal className="mt-8 grid max-w-6xl grid-cols-2 gap-2.5 sm:grid-cols-4 md:gap-3">
           {ROOMS.map((r) => (
-            <button key={r.id} type="button" onClick={() => openRoom(r.id)} className="group relative flex items-center overflow-hidden border border-cream/20 bg-night/40 text-left backdrop-blur-md transition-colors hover:border-gold sm:block">
-              <span className="block h-20 w-28 shrink-0 overflow-hidden sm:aspect-[16/9] sm:h-auto sm:w-full"><img src={img(r.photos[0], true)} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-105" /></span>
-              <span className="flex min-w-0 flex-1 items-center justify-between gap-3 px-4 py-3.5">
-                <span><span className="font-display block text-2xl">{r.name}</span><span className="label block text-[0.58rem] text-cream/60">Walk inside · film</span></span>
-                <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-gold/70 text-[0.6rem] text-gold transition-colors group-hover:bg-gold group-hover:text-night">▶</span>
+            <button key={r.id} type="button" onClick={() => (r.film ? openRoom(r.id) : openPage('rooms', r.id))} className="group relative overflow-hidden border border-cream/20 bg-night/40 text-left backdrop-blur-md transition-colors hover:border-gold">
+              <span className="block aspect-[4/3] overflow-hidden"><img src={img(r.photos[0], true)} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-105" /></span>
+              <span className="flex items-center justify-between gap-2 px-3 py-2.5 md:px-4 md:py-3">
+                <span className="min-w-0"><span className="font-display block text-lg leading-tight md:text-xl">{r.name}</span><span className="label block truncate text-[0.55rem] text-cream/60">{r.kicker} · {r.film ? 'Walk inside' : `${r.photos.length} photos`}</span></span>
+                <span aria-hidden className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-gold/70 text-[0.55rem] text-gold transition-colors group-hover:bg-gold group-hover:text-night">{r.film ? '▶' : '→'}</span>
               </span>
             </button>
           ))}
         </div>
-      </FilmSection>
-
-      {/* ─────────── TENTS ─────────── */}
-      <FilmSection onFull={setFull} id="tents" film="tents" kicker="15 nature tents" labelledBy="tents-title" title={<>Sleep beneath <em className="text-cream/85">the trees.</em></>}>
-        <p data-reveal className="mt-6 max-w-lg text-cream/80">Scalloped canvas cottages on the lawn, with hand-printed interiors and private steps, made for families and groups.</p>
-        <button data-reveal type="button" onClick={() => openRoom('tent')} className="label mt-8 inline-flex items-center gap-3 bg-gold px-6 py-4 text-night hover:bg-cream">▶ Walk into a tent</button>
       </FilmSection>
 
       {/* ─────────── POOL ─────────── */}
@@ -195,6 +190,31 @@ export function Explore({ openPage, openRoom }: { openPage: (p: Page, anchor?: s
             </div>
           </div>
         </div>
+      </section>
+
+      {/* ─────────── AWARDS ─────────── */}
+      <section id="awards" aria-labelledby="awards-title" className="border-y border-gold/15 px-6 py-24 md:px-[6vw] md:py-32">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p data-reveal className="label inline-flex items-center gap-2.5 text-gold"><Laurel className="h-5 w-5 text-gold" /> Recognition</p>
+            <h2 id="awards-title" data-reveal className="font-display mt-5 text-5xl font-light leading-[0.95] md:text-[4.2vw]">Award-winning, <em>year after year.</em></h2>
+          </div>
+          <button data-reveal type="button" onClick={() => { galleryStart.cat = 'Awards'; openPage('photos') }} className="label border-b border-gold pb-1 text-gold">See the awards →</button>
+        </div>
+        <ol data-reveal className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {AWARDS.map((a) => (
+            <li key={a.title} className="flex flex-col border border-cream/15 bg-cream/[0.03]">
+              {a.photo
+                ? <button type="button" onClick={() => { galleryStart.cat = 'Awards'; openPage('photos') }} className="block aspect-[4/3] overflow-hidden bg-night" aria-label={`See the ${a.by} award`}><img src={img(a.photo, true)} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-[1200ms] hover:scale-105" /></button>
+                : <span aria-hidden className="grid aspect-[4/3] place-items-center bg-gold/[0.06]"><Laurel className="h-14 w-14 text-gold/70" /></span>}
+              <div className="flex flex-1 flex-col p-5">
+                <p className="font-display text-4xl text-gold">{a.year}</p>
+                <p className="mt-3 font-display text-xl leading-snug text-cream">{a.title}</p>
+                <p className="mt-3 text-xs leading-relaxed text-cream/55">{a.by}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </section>
 
       {/* ─────────── PHOTO ZONES ─────────── */}

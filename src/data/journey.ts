@@ -24,7 +24,7 @@ export const CONTACT = {
   email: 'vimalresort@gmail.com',
   instagram: 'https://www.instagram.com/vimalresort/',
   instagramHandle: '@vimalresort',
-  address: 'New Bengaluru Highway, Shiratti Road, near Beladadi, Gadag, Karnataka 582101',
+  address: 'New Bengaluru Highway, Shiratti Road, near Beladadi, Gadag, Karnataka 582103',
   maps: 'https://www.google.com/maps/search/?api=1&query=Vimal+Resort+Gadag',
 }
 

@@ -50,8 +50,8 @@ function FilmSection({ id, film, kicker, title, children, labelledBy, onFull, si
     <section id={id} aria-labelledby={labelledBy} className="relative">
       <div data-film className="relative min-h-[100svh] overflow-hidden">
         <div data-film-inner className="absolute inset-0 will-change-transform"><SectionFilm {...f} /></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-night via-night/25 to-night/45" />
-        <FullScreenButton onClick={() => onFull({ title: id.charAt(0).toUpperCase() + id.slice(1), srcs: [wide.src], poster: wide.poster })} className="absolute right-5 top-[8.25rem] z-10 md:right-[6vw] md:top-32" />
+        <div className="absolute inset-0 bg-gradient-to-t from-night via-night/55 to-night/60 md:via-night/25 md:to-night/45" />
+        <FullScreenButton onClick={() => onFull({ title: id.charAt(0).toUpperCase() + id.slice(1), srcs: [wide.src], poster: wide.poster })} className="absolute right-4 top-[7.5rem] z-10 md:right-[6vw] md:top-32" />
         {/* sideFilm: the wide film shows an upright clip on the right, so the words keep to the left */}
         <div className={`relative flex min-h-[100svh] flex-col justify-end px-6 pb-14 pt-28 md:px-[6vw] md:pb-20 ${sideFilm ? 'md:pr-[42vw] [&_h2]:md:text-[4.6vw]' : ''}`}>
           <p data-reveal className="label text-gold">{kicker}</p>
@@ -100,11 +100,11 @@ export function Explore({ openPage, openRoom }: { openPage: (p: Page, anchor?: s
             <div key={f.label}><dt className="sr-only">{f.label}</dt><dd><span className="font-display block text-4xl text-gold md:text-5xl">{f.value}</span><span className="mt-1 block text-xs text-cream/70">{f.label}</span></dd></div>
           ))}
         </dl>
-        <div data-reveal className="mt-9 grid max-w-4xl gap-3 sm:grid-cols-2">
+        <div data-reveal className="mt-9 grid max-w-4xl grid-cols-1 gap-3 sm:grid-cols-2">
           {HALLS.map((h) => (
-            <button key={h.id} type="button" onClick={() => openPage('halls', h.id)} className="group flex items-center gap-4 border border-cream/20 bg-night/40 p-3 text-left backdrop-blur-md transition-colors hover:border-gold">
-              <img src={img(h.photos[0], true)} alt="" loading="lazy" className="h-16 w-24 shrink-0 object-cover" />
-              <span className="min-w-0 flex-1"><span className="font-display block text-2xl">{h.name}</span><span className="block truncate text-xs text-cream/60">{h.facts.map((f) => f.value).join(' · ')}</span></span>
+            <button key={h.id} type="button" onClick={() => openPage('halls', h.id)} className="group flex w-full min-w-0 items-center gap-3 border border-cream/20 bg-night/40 p-3 text-left backdrop-blur-md transition-colors hover:border-gold md:gap-4">
+              <img src={img(h.photos[0], true)} alt="" loading="lazy" className="h-16 w-20 shrink-0 object-cover md:w-24" />
+              <span className="min-w-0 flex-1"><span className="font-display block text-xl leading-tight md:text-2xl">{h.name}</span><span className="mt-0.5 block text-xs leading-snug text-cream/65">{h.facts.map((f) => f.value).join(' · ')}</span></span>
               <span aria-hidden className="text-xl text-gold transition-transform group-hover:translate-x-1">→</span>
             </button>
           ))}
@@ -122,8 +122,8 @@ export function Explore({ openPage, openRoom }: { openPage: (p: Page, anchor?: s
             <button key={r.id} type="button" onClick={() => (r.film ? openRoom(r.id) : openPage('rooms', r.id))} className="group relative overflow-hidden border border-cream/20 bg-night/40 text-left backdrop-blur-md transition-colors hover:border-gold">
               <span className="block aspect-[4/3] overflow-hidden"><img src={img(r.photos[0], true)} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-105" /></span>
               <span className="flex items-center justify-between gap-2 px-3 py-2.5 md:px-4 md:py-3">
-                <span className="min-w-0"><span className="font-display block text-lg leading-tight md:text-xl">{r.name}</span><span className="label block truncate text-[0.55rem] text-cream/60">{r.kicker} · {r.film ? 'Walk inside' : `${r.photos.length} photos`}</span></span>
-                <span aria-hidden className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-gold/70 text-[0.55rem] text-gold transition-colors group-hover:bg-gold group-hover:text-night">{r.film ? '▶' : '→'}</span>
+                <span className="min-w-0"><span className="font-display block text-lg leading-tight md:text-xl">{r.name}</span><span className="label mt-1 block text-[0.62rem] leading-snug text-cream/60">{r.kicker} · {r.film ? 'Walk inside' : `${r.photos.length} photos`}</span></span>
+                <span aria-hidden className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-gold/70 text-[0.62rem] text-gold transition-colors group-hover:bg-gold group-hover:text-night">{r.film ? '▶' : '→'}</span>
               </span>
             </button>
           ))}
@@ -136,7 +136,7 @@ export function Explore({ openPage, openRoom }: { openPage: (p: Page, anchor?: s
           {DAY.gold.prices.map((p) => (
             <div key={p.label}><p className="font-display text-4xl text-gold">{p.price}</p><p className="mt-1 text-xs text-cream/70">{p.label}</p></div>
           ))}
-          <button type="button" onClick={() => document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' })} className="label border-b border-gold pb-1 text-gold">Gold day package →</button>
+          <button type="button" onClick={() => document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' })} className="label inline-block border-b border-gold pb-1.5 pt-3 text-gold">Gold day package →</button>
         </div>
       </FilmSection>
 
@@ -145,8 +145,8 @@ export function Explore({ openPage, openRoom }: { openPage: (p: Page, anchor?: s
         <p data-reveal className="mt-6 max-w-2xl text-cream/80">{DAY.adventure.includes.slice(0, 8).join(' · ')} and more.</p>
         <div data-reveal className="mt-6 flex flex-wrap items-baseline gap-6">
           <p><span className="font-display text-4xl text-gold">{DAY.adventure.price}</span> <span className="text-sm text-cream/70">per person, add-on</span></p>
-          <button type="button" onClick={() => document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' })} className="label border-b border-gold pb-1 text-gold">All activities →</button>
-          <button type="button" onClick={() => { galleryStart.cat = 'Adventure'; openPage('photos') }} className="label border-b border-cream/50 pb-1 text-cream/85 hover:border-gold hover:text-gold">{ADVENTURE_MEDIA} →</button>
+          <button type="button" onClick={() => document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' })} className="label inline-block border-b border-gold pb-1.5 pt-3 text-gold">All activities →</button>
+          <button type="button" onClick={() => { galleryStart.cat = 'Adventure'; openPage('photos') }} className="label inline-block border-b border-cream/50 pb-1.5 pt-3 text-cream/85 hover:border-gold hover:text-gold">{ADVENTURE_MEDIA} →</button>
         </div>
       </FilmSection>
 
@@ -199,7 +199,7 @@ export function Explore({ openPage, openRoom }: { openPage: (p: Page, anchor?: s
             <p data-reveal className="label inline-flex items-center gap-2.5 text-gold"><Laurel className="h-5 w-5 text-gold" /> Recognition</p>
             <h2 id="awards-title" data-reveal className="font-display mt-5 text-5xl font-light leading-[0.95] md:text-[4.2vw]">Award-winning, <em>year after year.</em></h2>
           </div>
-          <button data-reveal type="button" onClick={() => { galleryStart.cat = 'Awards'; openPage('photos') }} className="label border-b border-gold pb-1 text-gold">See the awards →</button>
+          <button data-reveal type="button" onClick={() => { galleryStart.cat = 'Awards'; openPage('photos') }} className="label inline-block border-b border-gold pb-1.5 pt-3 text-gold">See the awards →</button>
         </div>
         <ol data-reveal className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {AWARDS.map((a) => (
@@ -233,15 +233,15 @@ export function Explore({ openPage, openRoom }: { openPage: (p: Page, anchor?: s
               <div>
                 <p className="label mb-3 text-cream/50">Find us</p>
                 <p className="leading-relaxed text-cream/85">{CONTACT.address}</p>
-                <a className="mt-4 inline-block border-b border-gold pb-1 text-gold" href={CONTACT.maps} target="_blank" rel="noreferrer">Get directions →</a>
+                <a className="mt-2 inline-block border-b border-gold pb-2 pt-3 text-gold" href={CONTACT.maps} target="_blank" rel="noreferrer">Get directions →</a>
               </div>
               <div>
                 <p className="label mb-3 text-cream/50">Talk to us</p>
-                <a className="block font-sans text-2xl font-medium tracking-normal tabular-nums hover:text-gold" href={CONTACT.tel}>{CONTACT.phone}</a>
-                <a className="mt-1 block text-cream/80" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+                <a className="block py-1.5 font-sans text-2xl font-medium tracking-normal tabular-nums hover:text-gold" href={CONTACT.tel}>{CONTACT.phone}</a>
+                <a className="block py-3 text-cream/80" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
                 <div className="mt-4 flex gap-5">
-                  <a className="border-b border-gold pb-1 text-gold" href={CONTACT.whatsapp} target="_blank" rel="noreferrer">WhatsApp →</a>
-                  <button type="button" className="border-b border-gold pb-1 text-gold" onClick={() => openPage('contact')}>Enquiry form →</button>
+                  <a className="inline-block border-b border-gold pb-2 pt-3 text-gold" href={CONTACT.whatsapp} target="_blank" rel="noreferrer">WhatsApp →</a>
+                  <button type="button" className="inline-block border-b border-gold pb-2 pt-3 text-gold" onClick={() => openPage('contact')}>Enquiry form →</button>
                 </div>
               </div>
               <div>
@@ -253,7 +253,7 @@ export function Explore({ openPage, openRoom }: { openPage: (p: Page, anchor?: s
             </div>
           </div>
         </div>
-        <footer className="relative flex flex-col gap-3 border-t border-cream/10 bg-night px-6 py-8 text-[0.7rem] text-cream/45 md:flex-row md:items-center md:justify-between md:px-[6vw]">
+        <footer className="relative flex flex-col gap-3 border-t border-cream/10 bg-night px-6 pb-[92px] pt-8 text-[0.75rem] md:pb-8 text-cream/55 md:flex-row md:items-center md:justify-between md:px-[6vw]">
           <span className="flex items-center gap-4 text-cream/85"><Logo title={false} className="w-24" /><span className="font-kn text-sm text-cream/55">{PROPERTY.kannadaName}</span></span>
           <span>{PROPERTY.name} · Gadag, Karnataka · {CONTACT.instagramHandle}</span>
           <span>Day visits {DAY.timings}</span>

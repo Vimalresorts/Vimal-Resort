@@ -38,12 +38,14 @@ export function PageShell({ page, onClose, children }: { page: Page | null; onCl
     <div ref={ref} role="dialog" aria-modal="true" aria-label={page ?? undefined}
       className={`fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-night/[0.97] backdrop-blur-xl transition-[opacity,transform] duration-700 ease-[cubic-bezier(.22,1,.36,1)] ${page ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-6 opacity-0'}`}>
       {/* the site header (Explore · logo · Contact us) stays on top of every page; this is the way back */}
-      <div className="px-6 pb-2 pt-[92px] md:px-10 md:pt-[118px]">
-        <button ref={closeBtn} type="button" onClick={onClose} className="label flex items-center gap-2 text-[0.62rem] text-cream/70 hover:text-gold" tabIndex={page ? 0 : -1}>
+      <div className="px-6 pb-2 pt-[80px] md:px-10 md:pt-[124px]">
+        <button ref={closeBtn} type="button" onClick={onClose} className="label flex min-h-11 items-center gap-2 text-[0.66rem] text-cream/75 hover:text-gold" tabIndex={page ? 0 : -1}>
           <span aria-hidden>←</span> Back to the resort
         </button>
       </div>
       {page && children}
+      {/* room for the phone's bottom contact bar */}
+      <div aria-hidden className="h-[84px] md:hidden" />
     </div>
   )
 }
@@ -116,7 +118,7 @@ function SpaceCard({ s, index, onWalk }: { s: Space; index: number; onWalk?: (id
           {hasFilm && s.film && (
             <button type="button" onClick={() => setMode('film')} aria-label="Show the walk-in film" className={`relative aspect-square overflow-hidden transition-opacity ${mode === 'film' ? 'opacity-100 ring-1 ring-gold' : 'opacity-70 hover:opacity-100'}`}>
               <img src={roomFilm(s.film).poster} alt="" loading="lazy" className="h-full w-full object-cover" />
-              <span aria-hidden className="absolute inset-0 grid place-items-center bg-night/35 text-[0.55rem] uppercase tracking-[0.14em] text-gold">▶ Film</span>
+              <span aria-hidden className="absolute inset-0 grid place-items-center bg-night/35 text-[0.62rem] uppercase tracking-[0.14em] text-gold">▶ Film</span>
             </button>
           )}
           {s.clips?.map((c, k) => (
@@ -277,7 +279,7 @@ export function GalleryPage() {
           ))}
         </div>
         {cat === 'Food' && <p className="-mt-4 mb-8 text-sm text-cream/55">These are illustrative images from the resort’s tour; the day’s menu may vary. Pure vegetarian, Jain on request.</p>}
-        <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
+        <div className="columns-2 gap-2.5 sm:gap-4 lg:columns-3">
           {items.map((g, i) => (
             <button key={g.id} type="button" onClick={() => setOpen(i)} className="group relative mb-4 block w-full overflow-hidden break-inside-avoid bg-cream/5" aria-label={`Open: ${g.caption}`}>
               <img src={thumb(g)} alt={g.caption} loading="lazy" decoding="async" style={{ aspectRatio: `${g.w} / ${g.h}` }} className="w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]" />
@@ -309,11 +311,11 @@ export function ContactPage() {
         <div className="space-y-10 md:col-span-5">
           <div>
             <p className="label text-[0.62rem] text-cream/50">Call</p>
-            <a href={CONTACT.tel} className="mt-2 block font-sans text-4xl font-medium tracking-normal tabular-nums text-cream hover:text-gold">{CONTACT.phone}</a>
+            <a href={CONTACT.tel} className="mt-1 block py-1 font-sans text-4xl font-medium tracking-normal tabular-nums text-cream hover:text-gold">{CONTACT.phone}</a>
           </div>
           <div>
             <p className="label text-[0.62rem] text-cream/50">WhatsApp</p>
-            <a href={CONTACT.whatsapp} target="_blank" rel="noreferrer" className="mt-2 block text-lg text-cream hover:text-gold">Message us on WhatsApp →</a>
+            <a href={CONTACT.whatsapp} target="_blank" rel="noreferrer" className="mt-1 block py-2 text-lg text-cream hover:text-gold">Message us on WhatsApp →</a>
           </div>
           <div>
             <p className="label text-[0.62rem] text-cream/50">Email</p>
@@ -322,7 +324,7 @@ export function ContactPage() {
           <div>
             <p className="label text-[0.62rem] text-cream/50">Find us</p>
             <p className="mt-2 leading-relaxed text-cream/80">{CONTACT.address}</p>
-            <a href={CONTACT.maps} target="_blank" rel="noreferrer" className="label mt-4 inline-block border-b border-gold pb-1 text-gold">Get directions</a>
+            <a href={CONTACT.maps} target="_blank" rel="noreferrer" className="label mt-2 inline-block border-b border-gold pb-2 pt-3 text-gold">Get directions</a>
           </div>
           <div>
             <p className="label text-[0.62rem] text-cream/50">Day visits</p>

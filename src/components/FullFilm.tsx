@@ -73,9 +73,10 @@ export function RotateIcon({ className = 'h-5 w-5' }: { className?: string }) {
 export function FullScreenButton({ onClick, className = '' }: { onClick: () => void; className?: string }) {
   return (
     <button type="button" onClick={(e) => { e.stopPropagation(); enterLandscape(); onClick() }}
-      className={`label flex items-center gap-2 rounded-full border border-cream/40 bg-night/40 px-3.5 py-2 text-[0.62rem] text-cream backdrop-blur-md transition-colors hover:border-gold hover:text-gold ${className}`}>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-3.5 w-3.5" aria-hidden><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
-      Full screen
+      aria-label="Watch full screen"
+      className={`label flex h-11 min-w-11 items-center justify-center gap-2 rounded-full border border-cream/40 bg-night/45 px-3 text-[0.62rem] text-cream backdrop-blur-md transition-colors hover:border-gold hover:text-gold md:h-auto md:px-3.5 md:py-2 ${className}`}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-4 w-4 md:h-3.5 md:w-3.5" aria-hidden><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+      <span className="hidden md:inline">Full screen</span>
     </button>
   )
 }

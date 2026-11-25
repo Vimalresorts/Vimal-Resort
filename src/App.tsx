@@ -8,7 +8,7 @@ import { FullFilm, FullScreenButton, RotateIcon } from './components/FullFilm'
 import { PROPERTY, WEDDING } from './data/resort'
 import { Laurel, Logo } from './components/Logo'
 import { ContactPage, GalleryPage, HallsPage, PageShell, RoomsPage, type Page } from './components/Pages'
-import { CONTACT, DURATION, ROUTE, SCENES, TITLE_OUT } from './data/journey'
+import { CONTACT, DURATION, ROUTE, SCENES, TITLE_OUT, wa } from './data/journey'
 
 const FILM_END = ROUTE.reduce((t, id) => t + DURATION[id], 0) * PX_PER_SEC
 const SECTIONS: [string, string][] = [['weddings', 'Weddings'], ['stay', 'Rooms & tents'], ['pool', 'The pool'], ['adventure', 'Adventure park'], ['packages', 'Day packages'], ['awards', 'Awards'], ['photo-zones', 'Photo zones'], ['visit', 'Visit']]
@@ -125,9 +125,10 @@ export default function App() {
             <section key={id} aria-hidden={!on} className={`absolute inset-x-6 flex flex-col items-center ${s.pos === 'top' ? 'top-[16svh]' : ''} transition-all duration-[1300ms] ease-[cubic-bezier(.22,1,.36,1)] ${on ? 'translate-y-0 opacity-100 blur-0' : 'translate-y-4 opacity-0 blur-[6px]'}`}>
               {id === 'arrival' ? (
                 <>
-                  <p className="label title-sub mb-6 text-cream">{s.kicker}</p>
-                  <Logo className="logo-hero w-[min(74vw,62svh)]" />
-                  <p className="font-kn title-sub mt-4 text-xl tracking-[0.06em] text-cream md:text-2xl">{PROPERTY.kannadaName}</p>
+                  <p className="label title-sub mb-5 text-cream">{s.kicker}</p>
+                  {/* Kannada first and large: most guests read Kannada; the English logo follows */}
+                  <p lang="kn" className="font-kn kn-hero text-[clamp(2.6rem,13vw,4.6rem)] font-semibold leading-[1.25] text-cream">{PROPERTY.kannadaName}</p>
+                  <Logo className="logo-hero mt-3 w-[min(62vw,46svh)] md:w-[min(46vw,48svh)]" />
                   <span className="my-5 block h-px w-16 bg-gold/80" />
                   <p className="font-display title-sub text-2xl italic text-cream md:text-4xl">{s.line}</p>
                   <p className="title-sub mt-6 flex items-center gap-2.5 rounded-full border border-gold/50 bg-night/35 px-4 py-2 text-[0.7rem] uppercase tracking-[0.18em] text-cream backdrop-blur-sm md:text-xs">
@@ -162,7 +163,7 @@ export default function App() {
 
       {/* ───────────── phones held upright: turn sideways, or watch full screen ───────────── */}
       {turnHint && !blocked && gone && filmSz === 'pt' && isUprightTouch() && !page && !room && !menu && !after && (
-        <div className="fixed bottom-[11svh] left-1/2 z-[35] flex -translate-x-1/2 items-center gap-3 whitespace-nowrap rounded-full border border-gold/60 bg-night/60 py-1.5 pl-4 pr-1.5 text-cream backdrop-blur-md">
+        <div className="fixed bottom-[17svh] left-1/2 z-[35] flex -translate-x-1/2 items-center gap-3 whitespace-nowrap rounded-full border border-gold/60 bg-night/60 py-1.5 pl-4 pr-1.5 text-cream backdrop-blur-md">
           <RotateIcon className="h-4 w-4 text-gold" />
           <span className="label text-[0.6rem]">Turn sideways</span>
           <FullScreenButton onClick={() => { setTurnHint(false); setFull(true) }} className="!py-1.5" />
@@ -172,16 +173,16 @@ export default function App() {
 
       {/* ───────────── into the resort cue ───────────── */}
       <button type="button" onClick={() => toSection('weddings')} tabIndex={isLast && !after ? 0 : -1}
-        className={`label fixed bottom-8 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-3 text-cream/85 transition-all duration-1000 hover:text-gold ${isLast && loaded && !page && !after ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-6 opacity-0'}`}>
-        Scroll to explore the resort
-        <span aria-hidden className="block h-10 w-px animate-pulse bg-gradient-to-b from-gold to-transparent" />
+        className={`label cue fixed bottom-6 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-2 whitespace-nowrap text-cream/85 md:bottom-8 md:gap-3 transition-all duration-1000 hover:text-gold ${isLast && loaded && !page && !after ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-6 opacity-0'}`}>
+        <span className="md:hidden">Swipe up to explore</span><span className="hidden md:inline">Scroll to explore the resort</span>
+        <span aria-hidden className="block h-8 w-px md:h-10 animate-pulse bg-gradient-to-b from-gold to-transparent" />
       </button>
 
       {/* ───────────── header ───────────── */}
       {/* Explore on the left (it turns into Close in the same spot), logo in the middle, Contact us always on the right */}
-      <header className={`fixed inset-x-0 top-0 z-[80] grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 py-5 transition-[opacity,background-color] duration-1000 md:px-10 md:py-7 ${(after || page || room) && !menu ? "bg-night/85 backdrop-blur-md md:py-5" : ""} ${loaded ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+      <header className={`fixed inset-x-0 top-0 z-[80] grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-3 transition-[opacity,background-color] duration-1000 md:px-10 md:py-7 ${(after || page || room) && !menu ? "bg-night/90 backdrop-blur-md md:py-5" : ""} ${loaded ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
         <nav aria-label="Main" className="flex items-center gap-7 justify-self-start">
-          <button type="button" onClick={() => { setRoom(null); setMenu((m) => !m) }} className="label flex items-center gap-3 text-cream hover:text-gold" aria-expanded={menu} aria-controls="chapters">
+          <button type="button" onClick={() => { setRoom(null); setMenu((m) => !m) }} className="label flex min-h-11 items-center gap-2.5 text-cream hover:text-gold md:gap-3" aria-expanded={menu} aria-controls="chapters">
             {menu
               ? <span aria-hidden className="relative block h-4 w-6"><span className="absolute inset-x-0 top-1/2 h-px rotate-45 bg-current" /><span className="absolute inset-x-0 top-1/2 h-px -rotate-45 bg-current" /></span>
               : <span aria-hidden className="flex w-6 flex-col gap-[5px]"><span className="h-px bg-current" /><span className="h-px w-4 bg-current" /></span>}
@@ -192,15 +193,37 @@ export default function App() {
           ))}
         </nav>
         <button type="button" onClick={() => { setMenu(false); setPage(null); setRoom(null); window.setTimeout(() => goTo('arrival'), 30) }} className="block w-[80px] justify-self-center text-cream md:w-[104px]" aria-label="Vimal Resort: back to the start"><Logo title={false} /></button>
-        <button type="button" onClick={() => openPage('contact')} className="label justify-self-end whitespace-nowrap border border-gold/70 px-3.5 py-2 text-[0.62rem] text-cream transition-colors hover:bg-gold hover:text-night md:px-5 md:py-2.5 md:text-[0.68rem]">Contact us</button>
+        <button type="button" onClick={() => openPage('contact')} className="label hdr-cta justify-self-end whitespace-nowrap border border-gold/70 px-3.5 py-2 text-[0.62rem] text-cream transition-colors hover:bg-gold hover:text-night md:px-5 md:py-2.5 md:text-[0.68rem]">Contact us</button>
       </header>
 
-      {/* a way to the contact page from every section and page */}
-      <button type="button" onClick={() => openPage('contact')} aria-label="Contact us"
-        className={`fixed bottom-5 right-5 z-[48] flex items-center gap-2.5 rounded-full bg-gold py-2.5 pl-3 pr-4 text-night shadow-[0_8px_30px_rgba(0,0,0,0.35)] transition-[opacity,transform] duration-500 hover:bg-cream md:bottom-8 md:right-8 ${(after || (page && page !== 'contact')) && !menu && !room ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'}`}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4" aria-hidden><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>
-        <span className="label text-[0.62rem]">Contact us</span>
-      </button>
+      {/* a way to the contact page from every section and page.
+          Phones: an app-style bar at the bottom (call · WhatsApp · enquire); laptops: a floating button */}
+      {(() => {
+        const show = (after || (page && page !== 'contact')) && !menu && !room
+        return (
+          <>
+            <nav aria-label="Contact the resort" className={`fixed inset-x-0 bottom-0 z-[48] grid grid-cols-3 border-t border-gold/30 bg-night/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md transition-[opacity,transform] duration-500 md:hidden ${show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-full opacity-0'}`}>
+              <a href={CONTACT.tel} className="flex min-h-[60px] flex-col items-center justify-center gap-1 text-cream active:bg-cream/10">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-5 w-5 text-gold" aria-hidden><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>
+                <span className="text-[0.7rem] font-medium tracking-[0.08em]">Call</span>
+              </a>
+              <a href={wa('Hello Vimal Resort, I would like to know about availability.')} target="_blank" rel="noreferrer" className="flex min-h-[60px] flex-col items-center justify-center gap-1 border-x border-cream/10 text-cream active:bg-cream/10">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-gold" aria-hidden><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.6-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.8-1.2.2-.6.2-1.1.1-1.2l-.5-.3Z" /></svg>
+                <span className="text-[0.7rem] font-medium tracking-[0.08em]">WhatsApp</span>
+              </a>
+              <button type="button" onClick={() => openPage('contact')} className="flex min-h-[60px] flex-col items-center justify-center gap-1 bg-gold text-night active:bg-cream">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-5 w-5" aria-hidden><path d="M4 5h16v14H4zM4 6l8 7 8-7" /></svg>
+                <span className="text-[0.7rem] font-semibold tracking-[0.08em]">Enquire</span>
+              </button>
+            </nav>
+            <button type="button" onClick={() => openPage('contact')} aria-label="Contact us"
+              className={`fixed bottom-8 right-8 z-[48] hidden items-center gap-2.5 rounded-full bg-gold py-2.5 pl-3 pr-4 text-night shadow-[0_8px_30px_rgba(0,0,0,0.35)] transition-[opacity,transform] duration-500 hover:bg-cream md:flex ${show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'}`}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4" aria-hidden><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>
+              <span className="label text-[0.62rem]">Contact us</span>
+            </button>
+          </>
+        )
+      })()}
 
       {/* ───────────── footer: progress ───────────── */}
       <footer className={`fixed inset-x-0 bottom-0 z-30 flex items-end justify-between gap-6 px-6 pb-6 transition-opacity duration-1000 md:px-10 md:pb-8 ${loaded && !isLast && !page && !after ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
@@ -242,7 +265,7 @@ export default function App() {
                 <span className="inline-block transition-transform duration-500 group-hover:translate-x-2">{l}</span>
               </button>
             ))}
-            <p className="mt-10 text-sm text-cream/55"><a href={CONTACT.tel} className="hover:text-gold" tabIndex={menu ? 0 : -1}>{CONTACT.phone}</a> · <a href={CONTACT.whatsapp} target="_blank" rel="noreferrer" className="hover:text-gold" tabIndex={menu ? 0 : -1}>WhatsApp</a></p>
+            <p className="mt-10 text-sm text-cream/55"><a href={CONTACT.tel} className="inline-block py-3 hover:text-gold" tabIndex={menu ? 0 : -1}>{CONTACT.phone}</a> · <a href={CONTACT.whatsapp} target="_blank" rel="noreferrer" className="inline-block py-3 hover:text-gold" tabIndex={menu ? 0 : -1}>WhatsApp</a></p>
           </div>
         </div>
       </div>
